@@ -83,17 +83,7 @@ class Chef
       end
       
       def should_remove_package(current_version, new_version)
-        to_remove_package = false
-        if current_version != nil
-          if new_version != nil 
-            if new_version == current_version
-              to_remove_package = true
-            end
-          else
-            to_remove_package = true
-          end
-        end
-        to_remove_package
+        !current_version.nil? && (new_version.nil? || new_version == current_version)
       end
       
       def action_purge
