@@ -71,6 +71,10 @@ describe Chef::Resource::SourcePackage do
     it "action should be :install" do
       @resource.action.should == :install
     end
+    
+    it "cookbook should be nil" do
+      @resource.cookbook.should be_nil
+    end
   end
 
   describe "actions" do

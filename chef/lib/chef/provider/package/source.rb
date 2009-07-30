@@ -43,7 +43,7 @@ class Chef::Provider::Package::Source < Chef::Provider::Package
   def action_download
     file = Chef::Resource::RemoteFile.new(download_path, @new_resource.collection, @new_resource.node)
     file.source(@new_resource.source)
-    file.cookbook(@new_resource.cookbook)
+    file.cookbook(@new_resource.cookbook) if @new_resource.cookbook
     file.backup(false)
     result = file.run_action(:create_if_missing)
     if result

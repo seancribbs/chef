@@ -53,6 +53,7 @@ describe Chef::Provider::Package::Source do
       @provider.load_current_resource
       @provider.current_resource.name.should == "emacs"
       @provider.current_resource.source.should be_nil
+      @provider.current_resource.configure.should be_true
     end
 
     it "should load serialized data from the cache file" do
@@ -136,6 +137,14 @@ describe Chef::Provider::Package::Source do
       @provider.action_unpack.should be_false
       File.directory?(@provider.send(:unpack_path)).should be_false
     end
+    
+    it "should store that it already unpacked the package" do
+      @provider.should_receive(:should_unpack?).and_return(true)
+      @provider.should_receive(:unpack_package).and_return(true)
+      @provider.action_unpack.should be_true
+      @provider.load_current_resource
+      @provider.current_resource.unpacked.should be_true
+    end
   end
 
   describe "should_configure?" do
@@ -209,6 +218,14 @@ describe Chef::Provider::Package::Source do
       @provider.action_configure.should be_false
       @resource.configured.should be_false
     end
+    
+    it "should store that it already unpacked the package" do
+      @provider.should_receive(:should_configure?).and_return(true)
+      @provider.should_receive(:configure_package).and_return(true)
+      @provider.action_configure.should be_true
+      @provider.load_current_resource
+      @provider.current_resource.configured.should be_true
+    end
   end
 
   describe "should_build?" do
@@ -276,6 +293,14 @@ describe Chef::Provider::Package::Source do
       @provider.should_not_receive(:run_command)
       @provider.action_build.should be_true
     end
+    
+    it "should store that it already unpacked the package" do
+      @provider.should_receive(:should_build?).and_return(true)
+      @provider.should_receive(:build_package).and_return(true)
+      @provider.action_build.should be_true
+      @provider.load_current_resource
+      @provider.current_resource.built.should be_true
+    end
   end
 
   describe "should_install?" do
@@ -336,6 +361,30 @@ describe Chef::Provider::Package::Source do
       @provider.should_receive(:run_command).and_return(false)
       @provider.action_install.should be_false
       @resource.installed.should be_false
+    end
+    
+    it "should store that it already unpacked the package" do
+      @provider.should_receive(:should_install?).and_return(true)
+      @provider.should_receive(:install_package).and_return(true)
+      @provider.action_install.should be_true
+      @provider.load_current_resource
+      @provider.current_resource.installed.should be_true
+    end
+  end
+  
+  describe "idempotency" do
+    before :each do
+      @resource.unpacks_to "emacs"
+      @resource.configure_command "true"
+      @resource.build_command "true"
+      @resource.install_command "true"
+      @provider.action_install
+      puts 
+    end
+    
+    it "should not run any commands" do
+      @provider.should_not_receive(:run_command)
+      @provider.action_install
     end
   end
 end
